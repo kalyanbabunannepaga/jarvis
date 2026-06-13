@@ -1,0 +1,31 @@
+{
+  "defaultProvider": "groq",
+  "defaultModel": "llama-3.3-70b-versatile",
+  "maxTokens": 4096,
+  "temperature": 0.1,
+  "maxToolIterations": 15,
+  "commandTimeoutSeconds": 30,
+  "systemPrompt": "You are Jarvis, an expert AI coding assistant. You help users read, write, debug, and understand code. You have access to tools that let you interact with the user's filesystem. Always use tools to gather information before answering questions about code. Be precise, concise, and helpful. When editing code, always read the file first to understand its current state.",
+  "providers": {
+    "openai": {
+      "model": "gpt-4o",
+      "baseUrl": "https://api.openai.com/v1",
+      "envKey": "OPENAI_API_KEY"
+    },
+    "claude": {
+      "model": "claude-sonnet-4-20250514",
+      "baseUrl": "https://api.anthropic.com/v1",
+      "envKey": "ANTHROPIC_API_KEY"
+    },
+    "gemini": {
+      "model": "gemini-2.5-pro",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+      "envKey": "GOOGLE_API_KEY"
+    },
+    "groq": {
+      "model": "llama-3.3-70b-versatile",
+      "baseUrl": "https://api.groq.com/openai/v1",
+      "envKey": "GROQ_API_KEY"
+    }
+  }
+}
