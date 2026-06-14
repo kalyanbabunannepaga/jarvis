@@ -1,6 +1,10 @@
 # Build output
 target/
 
+# Unnecessary files
+example.txt
+hello.cpp
+
 # IDE files
 .idea/
 *.iml
