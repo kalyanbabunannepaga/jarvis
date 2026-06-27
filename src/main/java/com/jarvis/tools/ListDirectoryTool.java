@@ -6,13 +6,15 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Tool to list directory contents with file sizes and type indicators.
  * Supports recursive listing and respects common ignore patterns.
  */
 public class ListDirectoryTool implements Tool {
+
+    /** Maximum depth for recursive directory listings. */
+    private static final int MAX_RECURSIVE_DEPTH = 5;
 
     private static final Set<String> IGNORED_DIRS = Set.of(
         ".git", ".svn", ".hg", "node_modules", "__pycache__",
@@ -81,12 +83,7 @@ public class ListDirectoryTool implements Tool {
         }
 
         // Sort: directories first, then files, alphabetically
-        entries.sort((a, b) -> {
-            boolean aIsDir = Files.isDirectory(a);
-            boolean bIsDir = Files.isDirectory(b);
-            if (aIsDir != bIsDir) return aIsDir ? -1 : 1;
-            return a.getFileName().toString().compareToIgnoreCase(b.getFileName().toString());
-        });
+        entries.sort(dirFirstAlpha());
 
         int dirCount = 0, fileCount = 0;
         for (Path entry : entries) {
@@ -106,7 +103,7 @@ public class ListDirectoryTool implements Tool {
     }
 
     private void listRecursive(Path root, Path current, StringBuilder sb, String indent, int depth) throws IOException {
-        if (depth > 5) {
+        if (depth > MAX_RECURSIVE_DEPTH) {
             sb.append(indent).append("  ... (max depth reached)\n");
             return;
         }
@@ -120,12 +117,7 @@ public class ListDirectoryTool implements Tool {
             }
         }
 
-        entries.sort((a, b) -> {
-            boolean aIsDir = Files.isDirectory(a);
-            boolean bIsDir = Files.isDirectory(b);
-            if (aIsDir != bIsDir) return aIsDir ? -1 : 1;
-            return a.getFileName().toString().compareToIgnoreCase(b.getFileName().toString());
-        });
+        entries.sort(dirFirstAlpha());
 
         for (Path entry : entries) {
             if (Files.isDirectory(entry)) {
@@ -145,6 +137,19 @@ public class ListDirectoryTool implements Tool {
             return IGNORED_DIRS.contains(name);
         }
         return IGNORED_DIRS.contains(name);
+    }
+
+    /**
+     * Comparator that sorts directories before files, then alphabetically.
+     * Extracted to avoid duplicate lambda CPD violations (squid:S4144).
+     */
+    private static Comparator<Path> dirFirstAlpha() {
+        return (a, b) -> {
+            boolean aIsDir = Files.isDirectory(a);
+            boolean bIsDir = Files.isDirectory(b);
+            if (aIsDir != bIsDir) return aIsDir ? -1 : 1;
+            return a.getFileName().toString().compareToIgnoreCase(b.getFileName().toString());
+        };
     }
 
     private String formatSize(long bytes) {

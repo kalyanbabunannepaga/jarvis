@@ -2,6 +2,8 @@ package com.jarvis.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +16,8 @@ import java.nio.file.Paths;
  * Config file location: ~/.jarvis/config.json
  */
 public class ConfigManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
 
     private static final String CONFIG_DIR = ".jarvis";
     private static final String CONFIG_FILE = "config.json";
@@ -42,7 +46,7 @@ public class ConfigManager {
                 Config userConfig = mapper.readValue(json, Config.class);
                 this.config = merge(defaults, userConfig);
             } catch (IOException e) {
-                System.err.println("⚠ Warning: Failed to read config file, using defaults: " + e.getMessage());
+                logger.warn("Failed to read config file, using defaults: {}", e.getMessage());
                 this.config = defaults;
             }
         } else {
@@ -62,7 +66,7 @@ public class ConfigManager {
             Files.createDirectories(configPath.getParent());
             mapper.writeValue(configPath.toFile(), config);
         } catch (IOException e) {
-            System.err.println("⚠ Warning: Failed to save config file: " + e.getMessage());
+            logger.warn("Failed to save config file: {}", e.getMessage());
         }
     }
 

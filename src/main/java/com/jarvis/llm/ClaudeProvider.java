@@ -2,42 +2,39 @@ package com.jarvis.llm;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Anthropic Claude API adapter.
- * Handles: Claude Opus, Sonnet, Haiku models.
- * API: POST https://api.anthropic.com/v1/messages
- *
- * Claude uses a different message format with content blocks (text, tool_use, tool_result).
+ * Handles: claude-sonnet-4, claude-opus-4, claude-haiku-4, etc.
+ * API: POST {@value #DEFAULT_BASE_URL}/messages
  */
-public class ClaudeProvider implements LLMProvider {
+public class ClaudeProvider extends AbstractHttpProvider {
+
+    /** Default Anthropic API base URL. */
+    public static final String DEFAULT_BASE_URL = "https://api.anthropic.com/v1";
 
     private static final String ANTHROPIC_VERSION = "2023-06-01";
 
     private final String apiKey;
     private final String modelName;
     private final String baseUrl;
-    private final HttpClient httpClient;
-    private final ObjectMapper mapper;
 
     public ClaudeProvider(String apiKey, String modelName, String baseUrl) {
+        super();
         this.apiKey = apiKey;
         this.modelName = modelName;
-        this.baseUrl = baseUrl != null ? baseUrl : "https://api.anthropic.com/v1";
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
-        this.mapper = new ObjectMapper();
+        this.baseUrl = baseUrl != null ? baseUrl : DEFAULT_BASE_URL;
     }
 
     @Override
@@ -58,25 +55,22 @@ public class ClaudeProvider implements LLMProvider {
                     .header("x-api-key", apiKey)
                     .header("anthropic-version", ANTHROPIC_VERSION)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(Duration.ofSeconds(120))
+                    .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
-                return new LLMResponse.Builder()
-                        .content("API Error (" + response.statusCode() + "): " + response.body())
-                        .finishReason(LLMResponse.FinishReason.ERROR)
-                        .build();
+                return errorResponse("API Error (" + response.statusCode() + "): " + response.body());
             }
 
             return parseResponse(response.body());
 
-        } catch (Exception e) {
-            return new LLMResponse.Builder()
-                    .content("Error calling Claude: " + e.getMessage())
-                    .finishReason(LLMResponse.FinishReason.ERROR)
-                    .build();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return errorResponse("Request to Claude was interrupted: " + e.getMessage());
+        } catch (IOException e) {
+            return errorResponse("Error calling Claude: " + e.getMessage());
         }
     }
 
@@ -129,13 +123,7 @@ public class ClaudeProvider implements LLMProvider {
         switch (msg.getRole()) {
             case USER -> {
                 node.put("role", "user");
-                // If this is a regular user message
-                if (msg.getToolCallId() == null) {
-                    node.put("content", msg.getContent());
-                } else {
-                    // This shouldn't happen for USER role
-                    node.put("content", msg.getContent());
-                }
+                node.put("content", msg.getContent());
             }
             case ASSISTANT -> {
                 node.put("role", "assistant");
@@ -204,6 +192,7 @@ public class ClaudeProvider implements LLMProvider {
                             Map<String, Object> args = mapper.convertValue(inputNode, new TypeReference<>() {});
                             toolCalls.add(new ToolCall(id, toolName, args));
                         }
+                        default -> { /* unknown block type — ignore */ }
                     }
                 }
             }
@@ -222,11 +211,8 @@ public class ClaudeProvider implements LLMProvider {
                     .completionTokens(completionTokens)
                     .build();
 
-        } catch (Exception e) {
-            return new LLMResponse.Builder()
-                    .content("Error parsing Claude response: " + e.getMessage())
-                    .finishReason(LLMResponse.FinishReason.ERROR)
-                    .build();
+        } catch (IOException e) {
+            return errorResponse("Error parsing Claude response: " + e.getMessage());
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.jarvis.tools;
 
 import com.jarvis.llm.ToolDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +17,11 @@ import java.util.regex.PatternSyntaxException;
  * Performs grep-style recursive search with line numbers and context.
  */
 public class SearchCodeTool implements Tool {
+
+    private static final Logger logger = LoggerFactory.getLogger(SearchCodeTool.class);
+
+    /** Files larger than this are skipped to avoid memory pressure. */
+    private static final long MAX_FILE_SIZE_BYTES = 1_000_000L;
 
     private static final int MAX_RESULTS = 50;
     private static final Set<String> IGNORED_DIRS = Set.of(
@@ -101,8 +108,8 @@ public class SearchCodeTool implements Tool {
                         return FileVisitResult.CONTINUE;
                     }
 
-                    // Skip large files (> 1MB)
-                    if (attrs.size() > 1_000_000) return FileVisitResult.CONTINUE;
+                    // Skip large files (> MAX_FILE_SIZE_BYTES)
+                    if (attrs.size() > MAX_FILE_SIZE_BYTES) return FileVisitResult.CONTINUE;
 
                     try {
                         List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
@@ -113,7 +120,8 @@ public class SearchCodeTool implements Tool {
                             }
                         }
                     } catch (IOException e) {
-                        // Skip files that can't be read as UTF-8
+                        // Non-UTF-8 or unreadable files are intentionally skipped during search
+                        logger.debug("Skipping unreadable file '{}': {}", file, e.getMessage());
                     }
 
                     return FileVisitResult.CONTINUE;

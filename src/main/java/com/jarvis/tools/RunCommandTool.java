@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class RunCommandTool implements Tool {
 
+    /** Maximum lines of command output captured before truncation. */
+    private static final int MAX_OUTPUT_LINES = 200;
+
     private final int timeoutSeconds;
 
     public RunCommandTool(int timeoutSeconds) {
@@ -49,13 +52,13 @@ public class RunCommandTool implements Tool {
         String workDir = arguments.containsKey("workingDirectory")
                 ? arguments.get("workingDirectory").toString() : ".";
 
-        // Prompt user for confirmation
-        System.out.println();
-        System.out.println("\u001B[33m┌─ 🔧 Command Execution Request ─────────────────────────\u001B[0m");
-        System.out.println("\u001B[33m│\u001B[0m Command: \u001B[1m" + command + "\u001B[0m");
-        System.out.println("\u001B[33m│\u001B[0m Directory: " + Paths.get(workDir).toAbsolutePath().normalize());
-        System.out.println("\u001B[33m└─────────────────────────────────────────────────────────\u001B[0m");
-        System.out.print("\u001B[33mExecute this command? [y/N]: \u001B[0m");
+        // Prompt user for confirmation — intentional terminal UI output, not logging (NOSONAR)
+        System.out.println(); //NOSONAR
+        System.out.println("\u001B[33m┌─ 🔧 Command Execution Request ─────────────────────────\u001B[0m"); //NOSONAR
+        System.out.println("\u001B[33m│\u001B[0m Command: \u001B[1m" + command + "\u001B[0m"); //NOSONAR
+        System.out.println("\u001B[33m│\u001B[0m Directory: " + Paths.get(workDir).toAbsolutePath().normalize()); //NOSONAR
+        System.out.println("\u001B[33m└─────────────────────────────────────────────────────────\u001B[0m"); //NOSONAR
+        System.out.print("\u001B[33mExecute this command? [y/N]: \u001B[0m"); //NOSONAR
 
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -91,11 +94,10 @@ public class RunCommandTool implements Tool {
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
                     lineCount++;
-                    // Print output in real-time
-                    System.out.println("  " + line);
-                    // Cap output at 200 lines
-                    if (lineCount >= 200) {
-                        output.append("... (output truncated at 200 lines)\n");
+                    System.out.println("  " + line); //NOSONAR intentional real-time output
+                    // Cap output at MAX_OUTPUT_LINES lines
+                    if (lineCount >= MAX_OUTPUT_LINES) {
+                        output.append("... (output truncated at ").append(MAX_OUTPUT_LINES).append(" lines)\n");
                         break;
                     }
                 }

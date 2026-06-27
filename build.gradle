@@ -42,6 +42,10 @@ dependencies {
     // Spring Boot loader (needed so bootJar embeds the JarLauncher classes)
     implementation 'org.springframework.boot:spring-boot-loader'
 
+    // Logging (SLF4J API + simple binding for non-web CLI app)
+    implementation 'org.slf4j:slf4j-api'
+    runtimeOnly 'org.slf4j:slf4j-simple'
+
     // Test dependencies (versions managed by Spring Boot BOM)
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.mockito:mockito-core'

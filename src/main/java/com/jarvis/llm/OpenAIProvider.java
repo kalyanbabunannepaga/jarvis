@@ -2,38 +2,36 @@ package com.jarvis.llm;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * OpenAI API adapter.
  * Handles: GPT-4o, GPT-4, GPT-3.5-turbo, o1, o3, etc.
- * API: POST https://api.openai.com/v1/chat/completions
+ * API: POST {@value #DEFAULT_BASE_URL}/chat/completions
  */
-public class OpenAIProvider implements LLMProvider {
+public class OpenAIProvider extends AbstractHttpProvider {
 
+    /** Default OpenAI API base URL. Override via constructor for compatible endpoints (e.g., Groq). */
+    public static final String DEFAULT_BASE_URL = "https://api.openai.com/v1";
     private final String apiKey;
     private final String modelName;
     private final String baseUrl;
-    private final HttpClient httpClient;
-    private final ObjectMapper mapper;
 
     public OpenAIProvider(String apiKey, String modelName, String baseUrl) {
+        super();
         this.apiKey = apiKey;
         this.modelName = modelName;
-        this.baseUrl = baseUrl != null ? baseUrl : "https://api.openai.com/v1";
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
-        this.mapper = new ObjectMapper();
+        this.baseUrl = baseUrl != null ? baseUrl : DEFAULT_BASE_URL;
     }
 
     @Override
@@ -53,25 +51,22 @@ public class OpenAIProvider implements LLMProvider {
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(Duration.ofSeconds(120))
+                    .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
-                return new LLMResponse.Builder()
-                        .content("API Error (" + response.statusCode() + "): " + response.body())
-                        .finishReason(LLMResponse.FinishReason.ERROR)
-                        .build();
+                return errorResponse("API Error (" + response.statusCode() + "): " + response.body());
             }
 
             return parseResponse(response.body());
 
-        } catch (Exception e) {
-            return new LLMResponse.Builder()
-                    .content("Error calling OpenAI: " + e.getMessage())
-                    .finishReason(LLMResponse.FinishReason.ERROR)
-                    .build();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return errorResponse("Request to OpenAI was interrupted: " + e.getMessage());
+        } catch (IOException e) {
+            return errorResponse("Error calling OpenAI: " + e.getMessage());
         }
     }
 
@@ -134,7 +129,7 @@ public class OpenAIProvider implements LLMProvider {
                         funcNode.put("name", tc.getFunctionName());
                         try {
                             funcNode.put("arguments", mapper.writeValueAsString(tc.getArguments()));
-                        } catch (Exception e) {
+                        } catch (IOException e) {
                             funcNode.put("arguments", "{}");
                         }
                         tcArray.add(tcNode);
@@ -188,11 +183,8 @@ public class OpenAIProvider implements LLMProvider {
                     .completionTokens(completionTokens)
                     .build();
 
-        } catch (Exception e) {
-            return new LLMResponse.Builder()
-                    .content("Error parsing OpenAI response: " + e.getMessage())
-                    .finishReason(LLMResponse.FinishReason.ERROR)
-                    .build();
+        } catch (IOException e) {
+            return errorResponse("Error parsing OpenAI response: " + e.getMessage());
         }
     }
 }

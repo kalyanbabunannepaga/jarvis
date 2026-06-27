@@ -25,6 +25,9 @@ import java.util.List;
  */
 public class Agent {
 
+    /** Rough character budget before trimming conversation memory (~100k token limit). */
+    private static final int MAX_MEMORY_CHARS = 80_000;
+
     private final LLMProvider provider;
     private final ToolRegistry toolRegistry;
     private final ConversationMemory memory;
@@ -51,7 +54,7 @@ public class Agent {
         memory.addMessage(Message.user(userMessage));
 
         // Trim memory if needed (rough estimate of 100k token limit)
-        memory.trimIfNeeded(80_000);
+        memory.trimIfNeeded(MAX_MEMORY_CHARS);
 
         // Get tool definitions
         List<ToolDefinition> tools = toolRegistry.getToolDefinitions();

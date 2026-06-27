@@ -49,17 +49,17 @@ public class TerminalUI {
      * Display the welcome banner.
      */
     public void showWelcomeBanner() {
-        System.out.println();
+        System.out.println(); //NOSONAR intentional terminal UI output
         System.out.println(BRIGHT_CYAN + BOLD +
                 "     ╦╔═╗╦═╗╦  ╦╦╔═╗" + RESET);
         System.out.println(BRIGHT_CYAN + BOLD +
                 "     ║╠═╣╠╦╝╚╗╔╝║╚═╗" + RESET);
         System.out.println(BRIGHT_CYAN + BOLD +
                 "    ╚╝╩ ╩╩╚═ ╚╝ ╩╚═╝" + RESET);
-        System.out.println();
-        System.out.println(DIM + "  AI Coding Assistant Agent v1.0.0" + RESET);
-        System.out.println(DIM + "  ─────────────────────────────────" + RESET);
-        System.out.println();
+        System.out.println(); //NOSONAR intentional terminal UI output
+        System.out.println(DIM + "  AI Coding Assistant Agent v1.0.0" + RESET); //NOSONAR intentional terminal UI output
+        System.out.println(DIM + "  ─────────────────────────────────" + RESET); //NOSONAR intentional terminal UI output
+        System.out.println(); //NOSONAR intentional terminal UI output
     }
 
     /**
@@ -68,8 +68,8 @@ public class TerminalUI {
     public void showConnectionInfo(String providerName, String model) {
         System.out.println(GREEN + "  ✓ Connected to " + BOLD + providerName + RESET
                 + GREEN + " using " + BOLD + model + RESET);
-        System.out.println(DIM + "  Type /help for commands, or start chatting!" + RESET);
-        System.out.println();
+        System.out.println(DIM + "  Type /help for commands, or start chatting!" + RESET); //NOSONAR intentional terminal UI output
+        System.out.println(); //NOSONAR intentional terminal UI output
     }
 
     /**
@@ -77,8 +77,8 @@ public class TerminalUI {
      */
     public void showThinking(String provider, String model) {
         isThinking = true;
-        System.out.print(DIM + "  ⏳ Thinking" + RESET);
-        System.out.print(DIM + " (" + provider + "/" + model + ")..." + RESET);
+        System.out.print(DIM + "  ⏳ Thinking" + RESET); //NOSONAR intentional terminal UI output
+        System.out.print(DIM + " (" + provider + "/" + model + ")..." + RESET); //NOSONAR intentional terminal UI output
     }
 
     /**
@@ -87,7 +87,7 @@ public class TerminalUI {
     public void clearThinking() {
         if (isThinking) {
             // Move cursor to start of line and clear
-            System.out.print("\r\u001B[K");
+            System.out.print("\r\u001B[K"); //NOSONAR intentional terminal UI output
             isThinking = false;
         }
     }
@@ -96,26 +96,26 @@ public class TerminalUI {
      * Display the assistant's final response.
      */
     public void showAssistantMessage(String content) {
-        System.out.println();
-        System.out.println(GREEN + BOLD + "  🤖 Jarvis:" + RESET);
-        System.out.println();
+        System.out.println(); //NOSONAR intentional terminal UI output
+        System.out.println(GREEN + BOLD + "  🤖 Jarvis:" + RESET); //NOSONAR intentional terminal UI output
+        System.out.println(); //NOSONAR intentional terminal UI output
         printFormattedContent(content, "     ");
-        System.out.println();
+        System.out.println(); //NOSONAR intentional terminal UI output
     }
 
     /**
      * Display the assistant's intermediate thinking text (before tool calls).
      */
     public void showAssistantThinking(String content) {
-        System.out.println(DIM + "  💭 " + truncate(content, 100) + RESET);
+        System.out.println(DIM + "  💭 " + truncate(content, 100) + RESET); //NOSONAR intentional terminal UI output
     }
 
     /**
      * Display a tool call being made.
      */
     public void showToolCall(String toolName, Map<String, Object> arguments) {
-        System.out.println();
-        System.out.println(YELLOW + "  🔧 " + BOLD + toolName + RESET + YELLOW + " ──────" + RESET);
+        System.out.println(); //NOSONAR intentional terminal UI output
+        System.out.println(YELLOW + "  🔧 " + BOLD + toolName + RESET + YELLOW + " ──────" + RESET); //NOSONAR intentional terminal UI output
 
         // Show key arguments (truncated for readability)
         for (Map.Entry<String, Object> entry : arguments.entrySet()) {
@@ -127,7 +127,7 @@ public class TerminalUI {
             if (entry.getKey().equals("content") && value.length() > 40) {
                 value = value.substring(0, 37) + "... (" + entry.getValue().toString().length() + " chars)";
             }
-            System.out.println(DIM + "     " + entry.getKey() + ": " + RESET + value);
+            System.out.println(DIM + "     " + entry.getKey() + ": " + RESET + value); //NOSONAR intentional terminal UI output
         }
     }
 
@@ -142,9 +142,9 @@ public class TerminalUI {
         }
 
         String[] lines = display.split("\n");
-        System.out.println(DIM + YELLOW + "     ↳ Result:" + RESET);
+        System.out.println(DIM + YELLOW + "     ↳ Result:" + RESET); //NOSONAR intentional terminal UI output
         for (String line : lines) {
-            System.out.println(DIM + "       " + line + RESET);
+            System.out.println(DIM + "       " + line + RESET); //NOSONAR intentional terminal UI output
         }
     }
 
@@ -152,7 +152,7 @@ public class TerminalUI {
      * Display a tool error.
      */
     public void showToolError(String toolName, String error) {
-        System.out.println(RED + "     ✗ Error in " + toolName + ": " + error + RESET);
+        System.out.println(RED + "     ✗ Error in " + toolName + ": " + error + RESET); //NOSONAR intentional terminal UI output
     }
 
     /**
@@ -170,70 +170,70 @@ public class TerminalUI {
      * Display an error message.
      */
     public void showError(String message) {
-        System.out.println(RED + BOLD + "  ✗ Error: " + RESET + RED + message + RESET);
+        System.out.println(RED + BOLD + "  ✗ Error: " + RESET + RED + message + RESET); //NOSONAR intentional terminal UI output
     }
 
     /**
      * Display a warning message.
      */
     public void showWarning(String message) {
-        System.out.println(YELLOW + "  ⚠ " + message + RESET);
+        System.out.println(YELLOW + "  ⚠ " + message + RESET); //NOSONAR intentional terminal UI output
     }
 
     /**
      * Display an info message.
      */
     public void showInfo(String message) {
-        System.out.println(CYAN + "  ℹ " + message + RESET);
+        System.out.println(CYAN + "  ℹ " + message + RESET); //NOSONAR intentional terminal UI output
     }
 
     /**
      * Display a success message.
      */
     public void showSuccess(String message) {
-        System.out.println(GREEN + "  ✓ " + message + RESET);
+        System.out.println(GREEN + "  ✓ " + message + RESET); //NOSONAR intentional terminal UI output
     }
 
     /**
      * Display the help text.
      */
     public void showHelp() {
-        System.out.println();
-        System.out.println(BOLD + "  Available Commands:" + RESET);
-        System.out.println(CYAN + "    /help" + RESET + "          Show this help message");
-        System.out.println(CYAN + "    /clear" + RESET + "         Clear conversation history");
-        System.out.println(CYAN + "    /model" + RESET + " <name>  Switch to a different model");
-        System.out.println(CYAN + "    /provider" + RESET + " <n>  Switch LLM provider (openai/claude/gemini)");
-        System.out.println(CYAN + "    /config" + RESET + "        Show current configuration");
-        System.out.println(CYAN + "    /tools" + RESET + "         List available tools");
-        System.out.println(CYAN + "    /exit" + RESET + "          Exit Jarvis");
-        System.out.println();
-        System.out.println(DIM + "  Or just type your message to chat with the AI." + RESET);
-        System.out.println();
+        System.out.println(); //NOSONAR intentional terminal UI output
+        System.out.println(BOLD + "  Available Commands:" + RESET); //NOSONAR intentional terminal UI output
+        System.out.println(CYAN + "    /help" + RESET + "          Show this help message"); //NOSONAR intentional terminal UI output
+        System.out.println(CYAN + "    /clear" + RESET + "         Clear conversation history"); //NOSONAR intentional terminal UI output
+        System.out.println(CYAN + "    /model" + RESET + " <name>  Switch to a different model"); //NOSONAR intentional terminal UI output
+        System.out.println(CYAN + "    /provider" + RESET + " <n>  Switch LLM provider (openai/claude/gemini)"); //NOSONAR intentional terminal UI output
+        System.out.println(CYAN + "    /config" + RESET + "        Show current configuration"); //NOSONAR intentional terminal UI output
+        System.out.println(CYAN + "    /tools" + RESET + "         List available tools"); //NOSONAR intentional terminal UI output
+        System.out.println(CYAN + "    /exit" + RESET + "          Exit Jarvis"); //NOSONAR intentional terminal UI output
+        System.out.println(); //NOSONAR intentional terminal UI output
+        System.out.println(DIM + "  Or just type your message to chat with the AI." + RESET); //NOSONAR intentional terminal UI output
+        System.out.println(); //NOSONAR intentional terminal UI output
     }
 
     /**
      * Display configuration info.
      */
     public void showConfig(String provider, String model, String configPath) {
-        System.out.println();
-        System.out.println(BOLD + "  Current Configuration:" + RESET);
-        System.out.println("    Provider: " + BRIGHT_CYAN + provider + RESET);
-        System.out.println("    Model:    " + BRIGHT_CYAN + model + RESET);
-        System.out.println("    Config:   " + DIM + configPath + RESET);
-        System.out.println();
+        System.out.println(); //NOSONAR intentional terminal UI output
+        System.out.println(BOLD + "  Current Configuration:" + RESET); //NOSONAR intentional terminal UI output
+        System.out.println("    Provider: " + BRIGHT_CYAN + provider + RESET); //NOSONAR intentional terminal UI output
+        System.out.println("    Model:    " + BRIGHT_CYAN + model + RESET); //NOSONAR intentional terminal UI output
+        System.out.println("    Config:   " + DIM + configPath + RESET); //NOSONAR intentional terminal UI output
+        System.out.println(); //NOSONAR intentional terminal UI output
     }
 
     /**
      * Display available tools.
      */
     public void showTools(java.util.Set<String> toolNames) {
-        System.out.println();
-        System.out.println(BOLD + "  Available Tools:" + RESET);
+        System.out.println(); //NOSONAR intentional terminal UI output
+        System.out.println(BOLD + "  Available Tools:" + RESET); //NOSONAR intentional terminal UI output
         for (String name : toolNames) {
-            System.out.println(YELLOW + "    🔧 " + name + RESET);
+            System.out.println(YELLOW + "    🔧 " + name + RESET); //NOSONAR intentional terminal UI output
         }
-        System.out.println();
+        System.out.println(); //NOSONAR intentional terminal UI output
     }
 
     /**
@@ -263,7 +263,7 @@ public class TerminalUI {
                             + (codeLanguage.isEmpty() ? "code" : codeLanguage) + " ───" + RESET);
                 } else {
                     inCodeBlock = false;
-                    System.out.println(indent + BG_CODE + DIM + " ───────────" + RESET);
+                    System.out.println(indent + BG_CODE + DIM + " ───────────" + RESET); //NOSONAR intentional terminal UI output
                 }
                 continue;
             }
@@ -271,11 +271,11 @@ public class TerminalUI {
             if (inCodeBlock) {
                 // Syntax highlight code
                 String highlighted = highlighter.highlight(line, codeLanguage);
-                System.out.println(indent + BG_CODE + " " + highlighted + RESET);
+                System.out.println(indent + BG_CODE + " " + highlighted + RESET); //NOSONAR intentional terminal UI output
             } else {
                 // Basic inline formatting
                 String formatted = formatInlineMarkdown(line);
-                System.out.println(indent + formatted);
+                System.out.println(indent + formatted); //NOSONAR intentional terminal UI output
             }
         }
     }
