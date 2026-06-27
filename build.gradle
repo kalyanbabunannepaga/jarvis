@@ -1,0 +1,73 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.2'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.jarvis'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    picocliVersion  = '4.7.6'
+    jlineVersion    = '3.26.3'
+    jacksonVersion  = '2.17.2'
+    jansiVersion    = '2.4.1'
+}
+
+dependencies {
+    // CLI Framework
+    implementation "info.picocli:picocli:${picocliVersion}"
+    annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
+
+    // Interactive Terminal
+    implementation "org.jline:jline:${jlineVersion}"
+
+    // JSON Processing (versions managed by Spring BOM; explicit versions kept for non-BOM deps)
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+
+    // ANSI Color Support
+    implementation "org.fusesource.jansi:jansi:${jansiVersion}"
+
+    // Spring Boot loader (needed so bootJar embeds the JarLauncher classes)
+    implementation 'org.springframework.boot:spring-boot-loader'
+
+    // Test dependencies (versions managed by Spring Boot BOM)
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Produce an executable fat JAR (same behavior as maven-shade-plugin)
+jar {
+    enabled = false // disable plain jar; shadowJar / bootJar takes over
+}
+
+// Use Spring Boot's built-in fat-JAR support as the primary artifact
+// Do NOT override Main-Class — Spring Boot sets it to JarLauncher and
+// Start-Class to com.jarvis.Jarvis automatically, which is required for
+// the BOOT-INF class layout to work correctly.
+bootJar {
+    archiveBaseName = 'jarvis'
+    archiveVersion  = "${project.version}"
+}
+
+// Annotation processor option required by picocli-codegen
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
